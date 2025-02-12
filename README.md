@@ -30,7 +30,7 @@ The goal of this project is to teach an AI how to play the Snake game using the 
 - **Performance**: The model outperformed the average score of 20 at **game 266**.
 - **Graph**:
 
-    ![Linear Epsilon Decay](../images/epsilon_strong80_266.png)
+    ![Linear Epsilon Decay](/images/epsilon_strong80_266.png)
 
 ### 2. Exponential Epsilon Decay
 - **Epsilon formula**: Exponential decay over time.
@@ -38,7 +38,7 @@ The goal of this project is to teach an AI how to play the Snake game using the 
 - **Performance**: The model outperformed the average score at **game 436**.
 - **Graph**:
 
-    ![Exponential Epsilon Decay](../images/epsilon_exp_436.png)
+    ![Exponential Epsilon Decay](/images/epsilon_exp_436.png)
 
 ### 3. Modified Reward System with Linear Epsilon Decay
 - In this approach, the reward system was adjusted as follows:
@@ -62,7 +62,7 @@ The goal of this project is to teach an AI how to play the Snake game using the 
 - **Performance**: The model outperformed the average score of 20 at **game 808**. The graph for this approach shows a more linear improvement compared to the previous strategies.
 - **Graph**:
 
-    ![Modified Reward System with Linear Epsilon Decay](../images/fine_for_inactivity_and_fine_for_late_collision_strong80_808.png)
+    ![Modified Reward System with Linear Epsilon Decay](/images/fine_for_inactivity_and_fine_for_late_collision_strong80_808.png)
 
 ### 4. Modified Reward System with Exponential Epsilon Decay
 
@@ -88,7 +88,7 @@ The goal of this project is to teach an AI how to play the Snake game using the 
 - **Performance**: The model outperformed the average score of 20 points at **game 793**. The graph shows a stable growth in the average score, also it has shown slightly better results compared to the same reward system with Linear Epsilon Decay.
 - **Graph**:
 
-    ![Modified Reward System with Exponential Epsilon Decay](../images/fine_for_inactivity_and_fine_for_late_collision_exp_epsilon_793.png)
+    ![Modified Reward System with Exponential Epsilon Decay](/images/fine_for_inactivity_and_fine_for_late_collision_exp_epsilon_793.png)
 
 ---
 
