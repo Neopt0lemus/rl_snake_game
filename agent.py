@@ -2,10 +2,12 @@ import torch
 import random
 import numpy as np
 import matplotlib as plt
+import pygame as pg
 from collections import deque
 from snake_game import SnakeGameAI, Direction, Point
 from model import LinearQNetwork, QTrainer
 from plotter import plot
+from game_recorder import GameRecorder
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
@@ -84,11 +86,11 @@ class Agent():
         self.trainer.train_step(state, action, reward, next_state, has_game_ended)
 
     def get_action(self, state):
-        self.epsilon = max(0.01, 0.1 * (0.99 ** self.n_games))
-        #self.epsilon = 80 - self.n_games
+        #self.epsilon = max(0.01, 0.1 * (0.99 ** self.n_games))
+        self.epsilon = 80 - self.n_games
         final_move = [0, 0, 0]
-        if random.uniform(0, 1) < self.epsilon:
-        #if random.randint(0, 200) < self.epsilon:
+        #if random.uniform(0, 1) < self.epsilon:
+        if random.randint(0, 200) < self.epsilon:
             move = random.randint(0, 2)
             final_move[move] = 1
         else:
@@ -108,6 +110,7 @@ def train():
     threshold_reached = False
     agent = Agent()
     game = SnakeGameAI()
+    recorder = GameRecorder()
     while True:
         old_state = agent.get_state(game)
 
@@ -119,16 +122,26 @@ def train():
         agent.train_shortterm_memory(old_state, final_move, reward, new_state, has_game_ended)
         agent.remember(old_state, final_move, reward, new_state, has_game_ended)
 
+        recorder.record_frame(pg.display.get_surface())        
+
         if has_game_ended:
             game.reset()
             agent.n_games += 1
             agent.train_longterm_memory()
 
+            if agent.n_games % 100 == 0 and score <= record:
+                recorder.save_game(agent.n_games, filename=f"recordings/game{agent.n_games}.gif")
+
             if score > record:
                 record = score
                 agent.model.save()
+                recorder.save_game(agent.n_games, filename=f"recordings/record_game{agent.n_games}_score{score}.gif")
+                print(f"New record! Game {agent.n_games} saved with score {score}")
+
+            recorder.drop_game()
 
             print('Game: ', agent.n_games, 'Score: ', score, 'Record: ', record)
+
         
             plot_scores.append(score)
             total_score += score
