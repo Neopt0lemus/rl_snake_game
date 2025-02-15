@@ -1,6 +1,6 @@
 # RL-SnakeGame
 
-This project implements a Q-Learning-based AI to play the Snake game. The model has been trained with different strategies for exploration (`epsilon`) and reward systems. Below, you’ll find an overview of the training process, results, and insights.
+This project implements a Q-Learning-based AI using PyTorch to play the Snake game. The model has been trained with different strategies for exploration (`epsilon`) and reward systems. Below, you’ll find an overview of the training process, results, and insights.
 
 ![Record Game](/recordings/record_game754_score73.gif)
 
