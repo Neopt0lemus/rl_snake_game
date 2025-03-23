@@ -98,11 +98,11 @@ This approach also uses Linear Epsilon Decay.
             self.score += 1
             self.frame_iteration = 0
             reward = 10 * len(self.snake)
-            #reward = 10
+            # reward = 10
             self._place_food()
         else:
             self.snake.pop()
-            #or no punishment
+            # or no punishment
             reward -= (0.9 ** len(self.snake))
     ```
 This change prevents unnecessary penalties for long survival times and allows the model to focus more on learning optimal movement patterns
@@ -175,97 +175,102 @@ Through experimentation with different exploration and reward strategies, I obse
 
     To see the results of different approaches you may want to uncomment this section in `agent.py` file
     ```python
-        def get_action(self, state):
-            self.epsilon = max(0.01, 0.1 * (0.99 ** self.n_games))
-            #self.epsilon = 80 - self.n_games
-            final_move = [0, 0, 0]
-            if random.uniform(0, 1) < self.epsilon:
-            #if random.randint(0, 200) < self.epsilon:
-                move = random.randint(0, 2)
-                final_move[move] = 1
-            else:
-                current_state = torch.tensor(state, dtype=torch.float)
-                prediction = self.model(current_state)
-                move = torch.argmax(prediction).item()
-                final_move[move] = 1
-            return final_move
+    def get_action(self, state: np.ndarray) -> list[int]:
+        """
+        Decides the next action.
+        """
+        # self.epsilon = max(0.01, 0.1 * (0.99 ** self.n_games))
+        self.epsilon = 80 - self.n_games
+        final_action = [0, 0, 0]
+        # if random.uniform(0, 1) < self.epsilon:
+        if random.randint(0, 200) < self.epsilon:
+            action = random.randint(0, 2)
+            final_action[action] = 1
+        else:
+            current_state = torch.tensor(state, dtype=torch.float)
+            prediction = self.model(current_state)
+            action = torch.argmax(prediction).item()
+            final_action[action] = 1
+        return final_action
     ```
     and this section in `snake_game.py` file
     ```python
-            reward = 0
-            game_over = False
-            if self.is_collision() or self.frame_iteration > 100*len(self.snake):
-                game_over = True
-                #reward = -10
-                reward = -10 * (len(self.snake) // 2)
-                return reward, game_over, self.score
+        reward = 0
+        game_over = False
+        if self.is_collision() or self.frame_iteration > 100*len(self.snake):
+            game_over = True
+            # reward = -10
+            reward = -10 * (len(self.snake) // 2)
+            return reward, game_over, self.score
 
-            if self.head == self.food:
-                self.score += 1
-                reward = 10 * len(self.snake)
-                #or no reset
-                self.frame_iteration = 0
-                #reward = 10
-                self._place_food()
-            else:
-                self.snake.pop()
-                #or no punishment
-                reward -= (0.9 ** len(self.snake))
+        if self.head == self.food:
+            self.score += 1
+            self.frame_iteration = 0
+            reward = 10 * len(self.snake)
+            # reward = 10
+            self._place_food()
+        else:
+            self.snake.pop()
+            # or no punishment
+            reward -= (0.9 ** len(self.snake))
     ```
     *Important* The repository contains plotter and recorder to do the research. However you may want to run the game without these tools. In order to do so comment the sections with `plot()` function and `recorder` instance in `agent.py` file. Just like this:
     ``` python
-        def train():
-    #plot_scores = []
-    #plot_mean_scores = []
-    record = 0
-    #total_score = 0
-    #threshold = 20
-    #threshold_reached = False
-    agent = Agent()
-    game = SnakeGameAI()
-    #recorder = GameRecorder()
-    while True:
-        old_state = agent.get_state(game)
+    def train() -> None:
+        """
+        Trains the reinforcement learning agent to play the Snake game.
+        """
+        # plot_scores = []
+        # plot_mean_scores = []
+        record = 0
+        # total_score = 0
+        # threshold = 20
+        # threshold_reached = False
+        agent = Agent()
+        game = SnakeGameAI()
+        # recorder = GameRecorder()
+        while True:
+            old_state = agent.get_state(game)
 
-        final_move = agent.get_action(old_state)
+            final_action = agent.get_action(old_state)
 
-        reward, has_game_ended, score = game.play_step(final_move)
-        new_state = agent.get_state(game)
+            reward, has_game_ended, score = game.play_step(final_action)
+            new_state = agent.get_state(game)
 
-        agent.train_shortterm_memory(old_state, final_move, reward, new_state, has_game_ended)
-        agent.remember(old_state, final_move, reward, new_state, has_game_ended)
+            agent.train_shortterm_memory(old_state, final_action, reward, new_state, has_game_ended)
+            agent.remember(old_state, final_action, reward, new_state, has_game_ended)
 
-        #recorder.record_frame(pg.display.get_surface())        
+            # recorder.record_frame(pg.display.get_surface())        
 
-        if has_game_ended:
-            game.reset()
-            agent.n_games += 1
-            agent.train_longterm_memory()
+            if has_game_ended:
+                game.reset()
+                agent.n_games += 1
+                agent.train_longterm_memory()
 
-            #if agent.n_games % 100 == 0 and score <= record:
-                #recorder.save_game(agent.n_games, filename=f"recordings/game{agent.n_games}.gif")
+                # if agent.n_games % 100 == 0 and score <= record:
+                #     recorder.save_game(filename=f"recordings/game{agent.n_games}.gif")
 
-            if score > record:
-                record = score
-                agent.model.save()
-                #recorder.save_game(agent.n_games, filename=f"recordings/record_game{agent.n_games}_score{score}.gif")
-                #print(f"New record! Game {agent.n_games} saved with score {score}")
+                if score > record:
+                    record = score
+                    agent.model.save()
+                #     recorder.save_game(filename=f"recordings/record_game{agent.n_games}_score{score}.gif")
+                #     print(f"New record! Game {agent.n_games} saved with score {score}")
 
-            #recorder.drop_game()
+                # recorder.drop_game()
 
-            print('Game: ', agent.n_games, 'Score: ', score, 'Record: ', record)
+                print('Game: ', agent.n_games, 'Score: ', score, 'Record: ', record)
 
-        
-            #plot_scores.append(score)
-            #total_score += score
-            #mean_score = total_score / agent.n_games
-            #plot_mean_scores.append(mean_score)
-            #if plot_mean_scores[-1] >= threshold and not threshold_reached:
-                #threshold_reached = True
-                #print(f"Average score exceeded {threshold} at game № {agent.n_games}!")
-                #plot(plot_scores, plot_mean_scores, threshold_reached=threshold_reached, threshold=threshold)
-            #else:
-                #plot(plot_scores, plot_mean_scores, threshold_reached=False, threshold=threshold)
+            
+                # plot_scores.append(score)
+                # total_score += score
+                # mean_score = total_score / agent.n_games
+                # plot_mean_scores.append(mean_score)
+                # if plot_mean_scores[-1] >= threshold and not threshold_reached:
+                #     threshold_reached = True
+                #     print(f"Average score exceeded {threshold} at game № {agent.n_games}!")
+                #     plot(plot_scores, plot_mean_scores, threshold_reached=threshold_reached, threshold=threshold)
+                # else:
+                #     plot(plot_scores, plot_mean_scores, threshold_reached=False, threshold=threshold)
         ```
 
 ---

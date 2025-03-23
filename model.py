@@ -3,21 +3,31 @@ import torch.nn as nn
 import torch.optim as optimizer
 import torch.nn.functional as F
 import os
+import numpy as np
+from typing import Union, Sequence
 
 class LinearQNetwork(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size: int, hidden_size: int, output_size: int) -> None:
+        """
+        Initializes a neural network for Q-learning.
+        """
         super().__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)
         self.fc2 = nn.Linear(hidden_size, output_size)
 
-
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass to the network.
+        """
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
 
         return x
 
-    def save(self, file_name='model.pth'):
+    def save(self, file_name: str = 'model.pth') -> None:
+        """
+        Saves the model's parameters to a file.
+        """
         model_folder_path = './model'
         if not os.path.exists(model_folder_path):
             os.makedirs(model_folder_path)
@@ -26,18 +36,29 @@ class LinearQNetwork(nn.Module):
         torch.save(self.state_dict(), file_name)
 
 class QTrainer:
-    def __init__(self, model, learning_rate, gamma):
+    def __init__(self, model: LinearQNetwork, learning_rate: float, gamma: float) -> None:
+        """
+        Initializes the Q-learning trainer for the model.
+        """
         self.model = model
         self.lr = learning_rate
         self.gamma = gamma
         self.optimizer = optimizer.Adam(model.parameters(), learning_rate)
         self.loss_function = nn.MSELoss()
 
-    def train_step(self, state, action, reward, next_state, has_game_ended):
-        state = torch.tensor(state, dtype=torch.float)
+    def train_step(self, 
+               state: Union[np.ndarray, Sequence[np.ndarray]], 
+               action: Union[list[int], Sequence[list[int]]], 
+               reward: Union[float, Sequence[float]], 
+               next_state: Union[np.ndarray, Sequence[np.ndarray]], 
+               has_game_ended: Union[bool, Sequence[bool]]) -> None:
+        """
+        Performs training based on previous experience.
+        """
+        state = torch.tensor(np.array(state), dtype=torch.float)
         action = torch.tensor(action, dtype=torch.long)
         reward = torch.tensor(reward, dtype=torch.float)
-        next_state = torch.tensor(next_state, dtype=torch.float)
+        next_state = torch.tensor(np.array(next_state), dtype=torch.float)
 
         if len(state.shape) == 1:
             state = torch.unsqueeze(state, 0)
